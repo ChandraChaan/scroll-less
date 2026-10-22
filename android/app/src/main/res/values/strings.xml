@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ScrollLess</string>
+    <string name="accessibility_service_summary">Counts Reels and Shorts and tracks scrolling time, on-device only.</string>
+    <string name="accessibility_service_description">ScrollLess uses the accessibility service to notice when a new Instagram Reel or YouTube Short appears on screen, count it, and measure how long you spend scrolling. It only reads the Instagram and YouTube windows, stores everything in a local database on this device, and never sends your activity anywhere.</string>
+</resources>

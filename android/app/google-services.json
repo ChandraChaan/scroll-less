@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "687567897909",
+    "project_id": "scroll-less-chandra",
+    "storage_bucket": "scroll-less-chandra.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:687567897909:android:514ba8205b2dfcb911f87c",
+        "android_client_info": {
+          "package_name": "dev.chandra.scroll_less"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArG2mgl1_LRxaSm65ny5Ot4OxFugOvCDY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
