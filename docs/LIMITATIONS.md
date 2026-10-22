@@ -114,3 +114,7 @@ Two bugs were found and fixed *by* the live test and are worth knowing about:
   release builds only. It is disabled in debug builds.
 * Crashlytics uploads on the *next* launch after a crash. Reports typically
   appear in the console within a few minutes.
+* Verified on 2026-10-22: the in-app "Send a test crash" action
+  (`RuntimeException: ScrollLess test crash (intentional)`) from release build
+  1.0.0 on the emulator was captured by the SDK, uploaded on relaunch, and
+  listed as a fatal issue in the Firebase console.

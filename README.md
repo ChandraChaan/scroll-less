@@ -90,6 +90,7 @@ firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.ap
 | Flutter unit + widget tests (`flutter test`) | 13 | pass |
 | `flutter analyze` | – | no issues |
 | Live YouTube Shorts run on a Pixel 7 emulator (release APK) | 7 scenarios | pass, see docs/LIMITATIONS.md |
+| Crashlytics end-to-end (test crash → console issue) | 1 | confirmed in console |
 
 ## Known limitations
 
