@@ -59,6 +59,7 @@ class ReelDetector(
         var pendingConfidence: Confidence = Confidence.NONE
         val recent = ArrayDeque<Entry>()
         var lastCountMs: Long = Long.MIN_VALUE / 2
+        var adoptNextWithoutCounting = false
     }
 
     private val states = HashMap<String, PkgState>()
@@ -74,6 +75,15 @@ class ReelDetector(
     /** Drop everything known about [pkg], including duplicate history. */
     fun reset(pkg: String) {
         states.remove(pkg)
+    }
+
+    /**
+     * The next page that stabilises for [pkg] becomes the current page but is *not*
+     * counted. Used after the service (re)starts while the user is already watching:
+     * the video on screen was most likely counted before the restart.
+     */
+    fun adoptNextWithoutCounting(pkg: String) {
+        states.getOrPut(pkg) { PkgState(pkg) }.adoptNextWithoutCounting = true
     }
 
     fun onSnapshot(s: Snapshot): Decision {
@@ -132,6 +142,13 @@ class ReelDetector(
         val confidence = st.pendingConfidence
         st.pending = null
         st.current = entry
+
+        if (st.adoptNextWithoutCounting) {
+            st.adoptNextWithoutCounting = false
+            st.recent.addLast(entry)
+            while (st.recent.size > recentSize) st.recent.removeFirst()
+            return Decision.None
+        }
 
         val duplicate = st.recent.any { r ->
             (r.index == null || entry.index == null || r.index == entry.index) &&

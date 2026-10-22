@@ -177,6 +177,20 @@ class ReelDetectorTest {
     }
 
     @Test
+    fun `adoptNextWithoutCounting swallows the first page after a restart but not the next one`() {
+        val h = Harness()
+        h.detector.adoptNextWithoutCounting(pkg)
+        val a = fp("maya", "sunrise", "hampi")
+        h.feed(snap(a, 1000)); h.tick(pkg, 1500)
+        assertEquals(0, h.counted.size)
+        // Coming back to the adopted page later is still a duplicate...
+        h.feed(snap(fp("rohit", "leg", "finisher"), 3000)); h.tick(pkg, 3500)
+        assertEquals(1, h.counted.size)
+        h.feed(snap(a, 5000)); h.tick(pkg, 5500)
+        assertEquals(1, h.counted.size)
+    }
+
+    @Test
     fun `rate limit suppresses bursts`() {
         val h = Harness(ReelDetector(stableMs = 0, minIntervalMs = 500))
         h.feed(snap(fp("a1", "a2"), 1000)); h.tick(pkg, 1000)

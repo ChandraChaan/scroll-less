@@ -107,6 +107,74 @@ class SurfaceClassifierTest {
     }
 
     @Test
+    fun `youtube home tab with reel_time_bar outside a full-screen ScrollView is not a surface`() {
+        // Reproduces the real tree captured from YouTube 21.41 on the Home tab.
+        val results = FakeUiNode(
+            viewId = "com.google.android.youtube:id/results",
+            className = "android.support.v7.widget.RecyclerView",
+            isScrollable = true,
+            bounds = Box(0, 262, w, 2337),
+            children = listOf(
+                FakeUiNode(bounds = Box(0, 262, w, 1100), children = listOf(FakeUiNode(text = "Sponsored - Amazon Music"))),
+                FakeUiNode(bounds = Box(0, 1100, w, 1900), children = listOf(FakeUiNode(text = "Shorts"), FakeUiNode(text = "Road accident"))),
+            ),
+        )
+        val coordinator = FakeUiNode(
+            viewId = "com.google.android.youtube:id/watch_while_layout_coordinator_layout",
+            className = "android.widget.ScrollView",
+            isScrollable = true,
+            bounds = Box(0, 136, w, 2337),
+            children = listOf(FakeUiNode(bounds = Box(0, 136, w, 2337), children = listOf(results))),
+        )
+        val root = FakeUiNode(
+            bounds = full,
+            children = listOf(
+                coordinator,
+                FakeUiNode(viewId = "com.google.android.youtube:id/reel_time_bar", bounds = full),
+            ),
+        )
+        val r = classifier.classify(root, Targets.YOUTUBE)
+        assertFalse(r.onSurface)
+    }
+
+    @Test
+    fun `real youtube shorts tree is detected with high confidence`() {
+        val page = FakeUiNode(
+            viewId = "com.google.android.youtube:id/reel_player_page_container",
+            bounds = Box(0, 136, w, 2211),
+            collectionItemIndex = 3,
+            children = listOf(
+                FakeUiNode(viewId = "com.google.android.youtube:id/reel_video_interactions", contentDescription = "Go to channel @Evoindia"),
+                FakeUiNode(text = "How fast can the new Mini Cooper S do a lap"),
+            ),
+        )
+        val recycler = FakeUiNode(
+            viewId = "com.google.android.youtube:id/reel_recycler",
+            className = "android.support.v7.widget.RecyclerView",
+            isScrollable = true,
+            bounds = Box(0, 136, w, 2211),
+            children = listOf(page),
+        )
+        val root = FakeUiNode(
+            bounds = full,
+            children = listOf(
+                FakeUiNode(
+                    viewId = "com.google.android.youtube:id/watch_while_layout_coordinator_layout",
+                    className = "android.widget.ScrollView",
+                    isScrollable = true,
+                    bounds = full,
+                    children = listOf(FakeUiNode(viewId = "com.google.android.youtube:id/reel_watch_fragment_root", bounds = Box(0, 136, w, 2211), children = listOf(recycler))),
+                ),
+                FakeUiNode(viewId = "com.google.android.youtube:id/reel_time_bar", bounds = full),
+            ),
+        )
+        val r = classifier.classify(root, Targets.YOUTUBE)
+        assertTrue(r.onSurface)
+        assertEquals(Confidence.HIGH, r.confidence)
+        assertSame(page, r.currentPage)
+    }
+
+    @Test
     fun `untracked package is never a surface`() {
         val r = classifier.classify(FakeUiNode(bounds = full), "com.example.other")
         assertFalse(r.onSurface)

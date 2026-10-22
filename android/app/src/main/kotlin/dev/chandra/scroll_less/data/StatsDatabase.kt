@@ -171,6 +171,12 @@ class StatsDatabase private constructor(context: Context) :
         return out
     }
 
+    /** Wall-clock time of the most recent counted video for [pkg], or null. */
+    fun lastEventTs(pkg: String): Long? =
+        readableDatabase.rawQuery("SELECT MAX(ts) FROM reel_events WHERE package = ?", arrayOf(pkg)).use { c ->
+            if (c.moveToFirst() && !c.isNull(0)) c.getLong(0) else null
+        }
+
     @Synchronized
     fun resetDay(day: String) {
         val db = writableDatabase

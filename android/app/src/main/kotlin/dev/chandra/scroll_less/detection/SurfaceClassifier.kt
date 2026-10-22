@@ -57,27 +57,26 @@ class SurfaceClassifier(private val screenWidth: Int, private val screenHeight: 
     private val rules = mapOf(
         Targets.INSTAGRAM to Rules(
             pagerIds = listOf("clips_viewer_view_pager", "clips_viewer_recycler", "clips_viewer_pager", "clips_view_pager"),
-            markerIds = listOf("clips_", "reels_viewer", "clips"),
+            markerIds = listOf("clips_video_container", "clips_viewer", "clips_media", "clips_caption", "clips_author", "clips_audio"),
         ),
         Targets.YOUTUBE to Rules(
             pagerIds = listOf("reel_recycler", "reel_pager", "shorts_recycler", "reel_vertical_pager"),
-            markerIds = listOf("reel_", "shorts_", "reel"),
+            markerIds = listOf("reel_player_page", "reel_player_overlay", "reel_watch_player", "reel_video_interactions", "reel_player_footer", "shorts_player"),
         ),
     )
+
+    /** View classes that behave like a vertical pager. Plain ScrollViews are excluded on purpose. */
+    private val pagerClassHints = listOf("RecyclerView", "ViewPager", "Pager", "ListView")
 
     fun classify(root: UiNode, pkg: String): SurfaceResult {
         val r = rules[pkg] ?: return SurfaceResult.OFF
         var knownPager: UiNode? = null
-        var markerCount = 0
         val scrollables = ArrayList<UiNode>()
 
         root.walk { node ->
-            val id = node.viewId?.substringAfter("/", node.viewId ?: "")
-            if (id != null && id.isNotEmpty()) {
-                if (knownPager == null && r.pagerIds.any { id == it || id.contains(it) }) knownPager = node
-                if (r.markerIds.any { id.contains(it) }) markerCount++
-            }
-            if (node.isScrollable && isTall(node)) scrollables.add(node)
+            val id = shortId(node)
+            if (id != null && knownPager == null && r.pagerIds.any { id == it || id.contains(it) }) knownPager = node
+            if (node.isScrollable && isTall(node) && isPagerClass(node)) scrollables.add(node)
         }
 
         knownPager?.let { pager ->
@@ -87,17 +86,41 @@ class SurfaceClassifier(private val screenWidth: Int, private val screenHeight: 
             }
         }
 
-        if (markerCount == 0) return SurfaceResult.OFF
-
-        // Heuristic path: the largest tall scrollable that has a near-full-screen centred child.
+        // Heuristic path: the *innermost* tall pager-like scrollable whose centred child is
+        // near full screen and whose own subtree carries Reels/Shorts markers. Markers
+        // elsewhere in the window (e.g. YouTube's `reel_time_bar` on the Home tab) do not count.
         val candidate = scrollables
-            .sortedByDescending { it.bounds.area }
+            .sortedBy { it.bounds.area }
             .firstOrNull { pager ->
-                val page = centredChild(pager)
-                page != null && page.bounds.height >= screenHeight * 0.6 && page.bounds.width >= screenWidth * 0.8
+                val page = centredChild(pager) ?: return@firstOrNull false
+                page.bounds.height >= screenHeight * 0.6 &&
+                    page.bounds.width >= screenWidth * 0.8 &&
+                    hasMarker(pager, r.markerIds)
             } ?: return SurfaceResult.OFF
 
         return SurfaceResult(true, candidate, centredChild(candidate), Confidence.MEDIUM)
+    }
+
+    private fun shortId(node: UiNode): String? {
+        val raw = node.viewId ?: return null
+        val id = raw.substringAfter("/", raw)
+        return id.ifEmpty { null }
+    }
+
+    private fun isPagerClass(node: UiNode): Boolean {
+        val cls = node.className ?: return false
+        return pagerClassHints.any { cls.contains(it) }
+    }
+
+    private fun hasMarker(subtree: UiNode, markers: List<String>): Boolean {
+        var found = false
+        subtree.walk(maxNodes = 800) { n ->
+            if (!found) {
+                val id = shortId(n)
+                if (id != null && markers.any { id.contains(it) }) found = true
+            }
+        }
+        return found
     }
 
     private fun isTall(node: UiNode): Boolean =

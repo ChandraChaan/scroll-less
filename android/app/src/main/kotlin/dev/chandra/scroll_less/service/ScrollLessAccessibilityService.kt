@@ -46,6 +46,7 @@ class ScrollLessAccessibilityService : AccessibilityService() {
     private var activePkg: String? = null
     private var activeOnSurface = false
     private var lastPublishMs = 0L
+    private var connectedAtMs = 0L
 
     private val processRunnable = Runnable { process() }
     private val pendingRunnable = Runnable { settlePending() }
@@ -65,6 +66,7 @@ class ScrollLessAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         instance = this
+        connectedAtMs = SystemClock.elapsedRealtime()
         db = StatsDatabase.get(this)
         overlay = OverlayController(this)
         val dm = resources.displayMetrics
@@ -72,6 +74,7 @@ class ScrollLessAccessibilityService : AccessibilityService() {
 
         serviceInfo = (serviceInfo ?: AccessibilityServiceInfo()).apply {
             eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
+                AccessibilityEvent.TYPE_WINDOWS_CHANGED or
                 AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED or
                 AccessibilityEvent.TYPE_VIEW_SCROLLED
             feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
@@ -90,11 +93,29 @@ class ScrollLessAccessibilityService : AccessibilityService() {
             if (activePkg != pkg) enterApp(pkg)
             handler.removeCallbacks(processRunnable)
             handler.postDelayed(processRunnable, DEBOUNCE_MS)
-        } else if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED && activePkg != null) {
-            if (pkg in IGNORED_PACKAGES) return
-            if (pkg == packageName && event.className?.toString()?.contains("Activity") != true) return
-            leave()
+        } else if (activePkg != null) {
+            when (event.eventType) {
+                AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
+                    if (pkg in IGNORED_PACKAGES) return
+                    if (pkg == packageName && event.className?.toString()?.contains("Activity") != true) return
+                    leave()
+                }
+                AccessibilityEvent.TYPE_WINDOWS_CHANGED -> checkStillInForeground()
+                else -> Unit
+            }
         }
+    }
+
+    /**
+     * Some Android versions do not emit TYPE_WINDOW_STATE_CHANGED when the launcher or a
+     * previous task comes back to the front. Verify against the active window itself.
+     */
+    private fun checkStillInForeground() {
+        val active = activePkg ?: return
+        val current = rootInActiveWindow?.packageName?.toString() ?: return
+        if (current == active || current in IGNORED_PACKAGES) return
+        if (current == packageName) return // our own overlay / activity windows are handled by state events
+        leave()
     }
 
     override fun onInterrupt() {}
@@ -122,6 +143,14 @@ class ScrollLessAccessibilityService : AccessibilityService() {
 
     private fun enterApp(pkg: String) {
         val now = SystemClock.elapsedRealtime()
+        if (now - connectedAtMs < RESTART_GRACE_MS) {
+            // Service just (re)started while the user may already be mid-video: if we counted
+            // something for this app moments ago, don't count the page on screen again.
+            val lastTs = db.lastEventTs(pkg)
+            if (lastTs != null && System.currentTimeMillis() - lastTs < RESTART_RECOUNT_WINDOW_MS) {
+                detector.adoptNextWithoutCounting(pkg)
+            }
+        }
         applyUsage(now)
         activePkg = pkg
         activeOnSurface = false
@@ -204,6 +233,8 @@ class ScrollLessAccessibilityService : AccessibilityService() {
     }
 
     private fun tick() {
+        checkStillInForeground()
+        if (activePkg == null) return
         applyUsage(SystemClock.elapsedRealtime())
         activePkg?.let { refreshOverlay(it) }
         publish()
@@ -248,6 +279,8 @@ class ScrollLessAccessibilityService : AccessibilityService() {
         private const val TAG = "ScrollLess"
         private const val DEBOUNCE_MS = 60L
         private const val TICK_MS = 1000L
+        private const val RESTART_GRACE_MS = 15_000L
+        private const val RESTART_RECOUNT_WINDOW_MS = 90_000L
         private val IGNORED_PACKAGES = setOf(
             "com.android.systemui",
             "android",
