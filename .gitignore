@@ -54,3 +54,7 @@ android/keystore/
 *service-account*.json
 firebase-debug.log
 .firebase/
+
+# Large release binaries are distributed via Firebase / Play, not git
+store/release/*.aab
+store/release/*.apk

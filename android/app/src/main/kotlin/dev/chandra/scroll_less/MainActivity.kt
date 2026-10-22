@@ -3,8 +3,6 @@ package dev.chandra.scroll_less
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.os.Handler
-import android.os.Looper
 import android.provider.Settings
 import android.text.TextUtils
 import dev.chandra.scroll_less.data.StatsBus
@@ -51,11 +49,6 @@ class MainActivity : FlutterActivity() {
                     "resetToday" -> { db.resetDay(StatsDatabase.today()); result.success(null) }
                     "clearAllData" -> { db.clearAll(); result.success(null) }
                     "getDatabaseName" -> result.success(StatsDatabase.NAME)
-                    "testCrash" -> {
-                        // Deliberate native crash so Crashlytics reporting can be verified end to end.
-                        Handler(Looper.getMainLooper()).post { throw RuntimeException("ScrollLess test crash (intentional)") }
-                        result.success(null)
-                    }
                     else -> result.notImplemented()
                 }
             } catch (e: Exception) {

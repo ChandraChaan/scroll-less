@@ -15,7 +15,7 @@ YouTube. Everything is stored in a local SQLite database on the phone.
 | `UsageTracker` | Attributes elapsed time to the active app and to the Reels/Shorts surface; discards gaps when the service was not observing. |
 | `OverlayController` | Draggable floating pill (`TYPE_ACCESSIBILITY_OVERLAY`, so no "draw over other apps" permission) showing today's count and time for the app you are in. Tap opens ScrollLess. |
 | `StatsDatabase` (Kotlin) / `SqliteStatsRepository` (Dart) | One SQLite file, `scrollless.db`: `daily_stats(day, package, reels, surface_ms, foreground_ms)` and `reel_events(ts, day, package, fingerprint, confidence)`. Kotlin writes, Flutter reads through `sqflite`; live updates reach Flutter over an `EventChannel`. |
-| Flutter dashboard | Setup card, today's totals, per-app cards, 7-day chart, recent detections with confidence, overlay toggle, reset / delete, privacy notes, Crashlytics test crash. |
+| Flutter app | Onboarding with the Play-required Accessibility disclosure, three tabs (Today, History with 7/30-day charts, Settings), live banner, per-app cards, recent detections with confidence, overlay toggle, reset / delete, in-app privacy policy, light and dark themes. |
 
 ## Privacy
 
@@ -82,15 +82,27 @@ firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.ap
 3. Toggle the floating counter, reset today or delete all data from
    *Settings* in the app.
 
+## Play Store release
+
+Everything needed for the listing lives under `store/`: signed AAB/APK and
+checksums (`store/release/`, git-ignored binaries), icon and feature graphic
+(`store/graphics/`), framed phone screenshots (`store/screenshots/phone/`),
+listing text and policy answers (`store/listing/`), the hosted privacy policy
+source (`store/hosting/`, deployed to https://scroll-less-chandra.web.app/privacy)
+and the step-by-step [publish checklist](store/PUBLISH_CHECKLIST.md).
+Brand sources are in `assets/brand/`; launcher icons and the Android 12 splash
+are generated with `flutter_launcher_icons` and `flutter_native_splash`
+(configuration in `pubspec.yaml`).
+
 ## Test status
 
 | Suite | Count | Result |
 | --- | --- | --- |
 | Kotlin JVM unit tests (`:app:testDebugUnitTest`) | 31 | pass |
-| Flutter unit + widget tests (`flutter test`) | 13 | pass |
+| Flutter unit + widget tests (`flutter test`) | 15 | pass |
 | `flutter analyze` | – | no issues |
 | Live YouTube Shorts run on a Pixel 7 emulator (release APK) | 7 scenarios | pass, see docs/LIMITATIONS.md |
-| Crashlytics end-to-end (test crash → console issue) | 1 | confirmed in console |
+| Crashlytics end-to-end (test crash → issue) | 2 builds | 1.0.0 and 1.1.0 (3) both confirmed via the Crashlytics API |
 
 ## Known limitations
 

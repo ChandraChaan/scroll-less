@@ -16,7 +16,6 @@ abstract class ScrollLessPlatform {
   Future<List<ReelEvent>> getRecentEvents(int limit);
   Future<void> resetToday();
   Future<void> clearAllData();
-  Future<void> testCrash();
 
   /// Live updates from the accessibility service (today's stats, foreground app).
   Stream<LiveState> get liveState;
@@ -67,9 +66,6 @@ class MethodChannelScrollLessPlatform implements ScrollLessPlatform {
 
   @override
   Future<void> clearAllData() => _methods.invokeMethod<void>('clearAllData');
-
-  @override
-  Future<void> testCrash() => _methods.invokeMethod<void>('testCrash');
 
   @override
   Stream<LiveState> get liveState =>

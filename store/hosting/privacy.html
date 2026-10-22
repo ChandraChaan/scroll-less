@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ScrollLess – Privacy Policy</title>
+<style>
+body{font-family:-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;max-width:760px;margin:0 auto;padding:32px 20px;color:#1f1d3a;line-height:1.55}
+h1{font-size:30px;margin:0 0 4px}h2{font-size:19px;margin:28px 0 8px}.meta{color:#666;font-size:14px}
+.badge{display:inline-block;background:#eef;color:#2b2a8c;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:600;margin:12px 0}
+a{color:#4f46e5}
+</style></head><body>
+<h1>ScrollLess – Privacy Policy</h1>
+<p class="meta">Effective 22 October 2026 · Applies to the Android app "ScrollLess" (package <code>dev.chandra.scroll_less</code>)</p>
+<span class="badge">No account · No analytics · No ads · Data stays on your phone</span>
+
+<h2>Summary</h2>
+<p>ScrollLess counts the Instagram Reels and YouTube Shorts you watch and measures how long you spend scrolling. All of that information is stored only on your device. The only data that ever leaves your phone is an anonymous crash report if the app crashes.</p>
+
+<h2>Accessibility API</h2>
+<p>ScrollLess uses Android's Accessibility API as its core functionality. The accessibility service observes the Instagram and YouTube screens to detect when a new Reel or Short is displayed and to measure how long those screens are visible. For every other application the service only receives the package name of the window that came to the foreground, which it uses to stop its timers; the content of other apps is never read. The service does not perform actions on your behalf, does not capture screenshots and does not record what you type.</p>
+<p>You enable and disable this service yourself in Android Settings → Accessibility. ScrollLess shows a disclosure explaining this use before sending you there.</p>
+
+<h2>Data stored on your device</h2>
+<ul>
+<li>Daily totals per app: number of videos counted, time with the Reels/Shorts viewer on screen, time with the app in the foreground.</li>
+<li>One record per counted video: timestamp, app, a detection-confidence label and a 16-character hash derived from the words visible on screen. The words themselves are never stored.</li>
+<li>Your preferences: whether the floating counter is enabled, its position, and whether onboarding was completed.</li>
+</ul>
+<p>Everything is kept in the app's private storage (a local SQLite database). It is not backed up to any server by ScrollLess. You can delete today's data or all data at any time from Settings inside the app, and uninstalling the app removes everything.</p>
+
+<h2>Data that leaves your device</h2>
+<p><strong>Crash reports only.</strong> ScrollLess uses Firebase Crashlytics (Google LLC) to collect crash reports so that bugs can be fixed. A crash report contains a stack trace, the app version, device model, operating-system version, free memory/disk at the time, and a Crashlytics installation identifier. It never contains screen content, your counts, or any account information. Crashlytics' handling of this data is described in <a href="https://firebase.google.com/support/privacy">Firebase's privacy documentation</a>. Crash reporting is disabled in debug builds.</p>
+<p>ScrollLess does not use analytics, advertising SDKs, or any account system, and does not sell or share data with third parties.</p>
+
+<h2>Permissions</h2>
+<ul>
+<li><strong>Accessibility service</strong> – required to count videos and track time (see above).</li>
+<li><strong>Internet</strong> – used only to send crash reports.</li>
+</ul>
+<p>The floating counter is drawn by the accessibility service itself, so ScrollLess does not request the "Display over other apps" permission. It does not request location, contacts, storage, camera, microphone, phone or notification permissions.</p>
+
+<h2>Children</h2>
+<p>ScrollLess is not directed at children under 13 and knowingly collects no personal information from anyone.</p>
+
+<h2>Your choices</h2>
+<ul>
+<li>Turn the accessibility service off at any time in Android Settings; counting stops immediately.</li>
+<li>Delete stored data from Settings → Your data inside the app.</li>
+<li>Uninstall the app to remove all local data.</li>
+</ul>
+
+<h2>Changes</h2>
+<p>If this policy changes, the new version will be published at this address and the effective date above will be updated.</p>
+
+<h2>Contact</h2>
+<p>Questions about this policy: open an issue at <a href="https://github.com/ChandraChaan/scroll-less">github.com/ChandraChaan/scroll-less</a> or use the developer email address shown on the Google Play listing.</p>
+</body></html>

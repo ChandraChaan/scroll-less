@@ -79,6 +79,10 @@ Two bugs were found and fixed *by* the live test and are worth knowing about:
 2. When the accessibility service restarts while a video is on screen, that
    video was counted again. The service now adopts the on-screen page
    without counting if a count for that app happened in the previous 90 s.
+3. (1.1.0) A YouTube picture-in-picture window kept emitting events after the
+   user left YouTube, so the overlay and "YouTube is open" banner re-appeared
+   over other apps and PiP time was billed as foreground time. Events from a
+   tracked app are now ignored unless its window is the active window.
 
 ## Time tracking
 
@@ -114,7 +118,12 @@ Two bugs were found and fixed *by* the live test and are worth knowing about:
   release builds only. It is disabled in debug builds.
 * Crashlytics uploads on the *next* launch after a crash. Reports typically
   appear in the console within a few minutes.
-* Verified on 2026-10-22: the in-app "Send a test crash" action
-  (`RuntimeException: ScrollLess test crash (intentional)`) from release build
-  1.0.0 on the emulator was captured by the SDK, uploaded on relaunch, and
-  listed as a fatal issue in the Firebase console.
+* Verified on 2026-10-22: a deliberate `RuntimeException: ScrollLess test
+  crash (intentional)` from release build 1.0.0 on the emulator was captured
+  by the SDK, uploaded on relaunch, and listed as a fatal issue in the
+  Firebase console (also confirmed through the Crashlytics API: issue
+  `7f5e330e45c17b3f173c1c44386dfe00`, 2 events). The same test on 1.1.0 (3)
+  was received by Crashlytics ten seconds after the crash (API event
+  `2277959058875416001`, version display name "1.1.0 (3)"). The in-app test-crash button was
+  removed from the store build (1.1.0 (4)) at the owner's request; future
+  verification needs a debug build or a real crash.

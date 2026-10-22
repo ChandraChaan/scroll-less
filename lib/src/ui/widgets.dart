@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../data/models.dart';
 import '../data/stats_repository.dart';
+import '../theme/app_theme.dart';
 
-Color appColor(TrackedApp app, ColorScheme scheme) => switch (app) {
-      TrackedApp.instagram => const Color(0xFFE1306C),
-      TrackedApp.youtube => const Color(0xFFFF0033),
+Color appColor(TrackedApp app) => switch (app) {
+      TrackedApp.instagram => Brand.instagram,
+      TrackedApp.youtube => Brand.youtube,
     };
 
 IconData appIcon(TrackedApp app) => switch (app) {
@@ -14,52 +15,66 @@ IconData appIcon(TrackedApp app) => switch (app) {
     };
 
 class SectionTitle extends StatelessWidget {
-  const SectionTitle(this.text, {super.key});
+  const SectionTitle(this.text, {super.key, this.trailing});
   final String text;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 8, left: 4),
-        child: Text(text, style: Theme.of(context).textTheme.titleMedium),
+        padding: const EdgeInsets.only(bottom: 10, left: 4, right: 4),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(text, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+            ),
+            ?trailing,
+          ],
+        ),
       );
 }
 
-/// Shown until the accessibility service is enabled.
+/// Gradient card shown until the accessibility service is enabled.
 class SetupCard extends StatelessWidget {
   const SetupCard({super.key, required this.onEnable});
-  final Future<void> Function() onEnable;
+  final VoidCallback onEnable;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Card(
-      color: scheme.primaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.accessibility_new, color: scheme.onPrimaryContainer),
-                const SizedBox(width: 8),
-                Text('One step to start', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: scheme.onPrimaryContainer)),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'ScrollLess counts Reels and Shorts by watching the Instagram and YouTube screens through '
-              'Android\'s accessibility service. Enable "ScrollLess" under Installed apps / Downloaded apps.',
-              style: TextStyle(color: scheme.onPrimaryContainer),
-            ),
-            const SizedBox(height: 12),
-            FilledButton.icon(
-              onPressed: onEnable,
-              icon: const Icon(Icons.settings),
-              label: const Text('Open accessibility settings'),
-            ),
-          ],
-        ),
+    final theme = Theme.of(context);
+    return Container(
+      decoration: BoxDecoration(gradient: Brand.gradient, borderRadius: BorderRadius.circular(20)),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(12)),
+                child: const Icon(Icons.accessibility_new_rounded, color: Colors.white),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text('Counting is paused',
+                    style: theme.textTheme.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Turn on the ScrollLess accessibility service so Reels and Shorts can be counted. It only looks at the Instagram and YouTube screens.',
+            style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white.withValues(alpha: 0.9)),
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            key: const Key('enable-service'),
+            style: FilledButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Brand.indigoDeep, minimumSize: const Size.fromHeight(46)),
+            onPressed: onEnable,
+            icon: const Icon(Icons.settings_rounded),
+            label: const Text('Turn on in Settings'),
+          ),
+        ],
       ),
     );
   }
@@ -72,52 +87,130 @@ class LiveBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
     return Card(
-      color: scheme.tertiaryContainer,
       child: ListTile(
-        leading: Icon(appIcon(app), color: appColor(app, scheme)),
-        title: Text('${app.label} is open'),
-        subtitle: Text(onSurface ? 'Watching ${app.unitLabel} — counting live' : 'Not on ${app.unitLabel} right now'),
+        leading: Stack(
+          alignment: Alignment.bottomRight,
+          children: [
+            Icon(appIcon(app), color: appColor(app), size: 28),
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(color: onSurface ? Brand.mint : theme.colorScheme.outline, shape: BoxShape.circle),
+            ),
+          ],
+        ),
+        title: Text('${app.label} is open', style: const TextStyle(fontWeight: FontWeight.w600)),
+        subtitle: Text(onSurface ? 'Watching ${app.unitLabel} · counting live' : 'Not on ${app.unitLabel} right now'),
       ),
     );
   }
 }
 
+/// Big "today" card with count, time and comparison to yesterday.
 class TodayHero extends StatelessWidget {
-  const TodayHero({super.key, required this.total});
+  const TodayHero({super.key, required this.total, this.yesterday});
   final DailyStat total;
+  final DaySummary? yesterday;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+    final delta = yesterday == null ? null : total.reels - yesterday!.reels;
+    return Container(
+      decoration: BoxDecoration(
+        gradient: Brand.gradient,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [BoxShadow(color: Brand.indigo.withValues(alpha: 0.25), blurRadius: 24, offset: const Offset(0, 10))],
+      ),
+      padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text('TODAY', style: theme.textTheme.labelMedium?.copyWith(color: Colors.white70, letterSpacing: 1.5, fontWeight: FontWeight.w700)),
+              const Spacer(),
+              if (delta != null)
+                _DeltaChip(delta: delta),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${total.reels}',
+                key: const Key('today-total-count'),
+                style: theme.textTheme.displayLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w800, height: 1, letterSpacing: -2),
+              ),
+              const SizedBox(width: 10),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text('short videos', style: theme.textTheme.titleMedium?.copyWith(color: Colors.white.withValues(alpha: 0.9))),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              _HeroStat(icon: Icons.timer_outlined, value: formatDuration(total.surfaceTime), label: 'scrolling'),
+              const SizedBox(width: 12),
+              _HeroStat(icon: Icons.phone_android_rounded, value: formatDuration(total.foregroundTime), label: 'in the apps'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeltaChip extends StatelessWidget {
+  const _DeltaChip({required this.delta});
+  final int delta;
+
+  @override
+  Widget build(BuildContext context) {
+    final up = delta > 0;
+    final text = delta == 0 ? 'same as yesterday' : '${up ? '+' : ''}$delta vs yesterday';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(999)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(delta == 0 ? Icons.remove : (up ? Icons.north_east : Icons.south_west), size: 14, color: up ? Brand.coral : Brand.mint),
+          const SizedBox(width: 4),
+          Text(text, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroStat extends StatelessWidget {
+  const _HeroStat({required this.icon, required this.value, required this.label});
+  final IconData icon;
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(16)),
         child: Row(
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Today', style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${total.reels}',
-                    key: const Key('today-total-count'),
-                    style: theme.textTheme.displayMedium?.copyWith(fontWeight: FontWeight.w700),
-                  ),
-                  Text('short videos watched', style: theme.textTheme.bodyMedium),
-                ],
-              ),
-            ),
+            Icon(icon, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
             Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.timer_outlined, color: theme.colorScheme.primary),
-                const SizedBox(height: 4),
-                Text(formatDuration(total.surfaceTime), style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
-                Text('scrolling', style: theme.textTheme.bodySmall),
+                Text(value, style: theme.textTheme.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w800)),
+                Text(label, style: theme.textTheme.labelSmall?.copyWith(color: Colors.white70)),
               ],
             ),
           ],
@@ -135,7 +228,7 @@ class AppStatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = appColor(app, theme.colorScheme);
+    final color = appColor(app);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -144,17 +237,22 @@ class AppStatCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(appIcon(app), color: color, size: 20),
-                const SizedBox(width: 6),
-                Text(app.label, style: theme.textTheme.titleSmall),
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+                  child: Icon(appIcon(app), color: color, size: 18),
+                ),
+                const SizedBox(width: 8),
+                Expanded(child: Text(app.label, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700))),
               ],
             ),
+            const SizedBox(height: 14),
+            Text('${stat.reels}', key: Key('count-${app.name}'), style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800, height: 1)),
+            const SizedBox(height: 2),
+            Text(app.unitLabel, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
             const SizedBox(height: 12),
-            Text('${stat.reels}', key: Key('count-${app.name}'), style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700)),
-            Text(app.unitLabel, style: theme.textTheme.bodySmall),
-            const SizedBox(height: 10),
             _row(theme, Icons.timer_outlined, '${formatDuration(stat.surfaceTime)} on ${app.unitLabel}'),
-            _row(theme, Icons.phone_android, '${formatDuration(stat.foregroundTime)} in app'),
+            _row(theme, Icons.phone_android_outlined, '${formatDuration(stat.foregroundTime)} in app'),
           ],
         ),
       ),
@@ -162,11 +260,11 @@ class AppStatCard extends StatelessWidget {
   }
 
   Widget _row(ThemeData theme, IconData icon, String text) => Padding(
-        padding: const EdgeInsets.only(top: 2),
+        padding: const EdgeInsets.only(top: 3),
         child: Row(
           children: [
             Icon(icon, size: 14, color: theme.colorScheme.onSurfaceVariant),
-            const SizedBox(width: 4),
+            const SizedBox(width: 5),
             Expanded(child: Text(text, style: theme.textTheme.bodySmall, overflow: TextOverflow.ellipsis)),
           ],
         ),
@@ -174,130 +272,123 @@ class AppStatCard extends StatelessWidget {
 }
 
 /// Stacked bars of videos per day, one segment per app.
-class WeekChart extends StatelessWidget {
-  const WeekChart({super.key, required this.days});
+class DayBarChart extends StatelessWidget {
+  const DayBarChart({super.key, required this.days, this.showWeekday = true});
   final List<DaySummary> days;
+  final bool showWeekday;
 
-  static const _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  static const _weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final max = days.fold<int>(0, (m, d) => d.reels > m ? d.reels : m);
-    final total = days.fold<int>(0, (a, d) => a + d.reels);
-    final totalTime = days.fold<Duration>(Duration.zero, (a, d) => a + d.surfaceTime);
+    final compact = days.length > 10;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('$total videos · ${formatDuration(totalTime)} scrolling', style: theme.textTheme.bodyMedium),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 140,
-              child: days.isEmpty
-                  ? const Center(child: Text('No data yet'))
-                  : Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        for (final d in days)
+    return SizedBox(
+      height: 150,
+      child: days.isEmpty
+          ? const Center(child: Text('No data yet'))
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                for (final d in days)
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: compact ? 1.5 : 5),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          if (d.reels > 0 && !compact) Text('${d.reels}', style: theme.textTheme.labelSmall),
+                          const SizedBox(height: 2),
                           Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 4),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  if (d.reels > 0)
-                                    Text('${d.reels}', style: theme.textTheme.labelSmall),
-                                  const SizedBox(height: 2),
-                                  Expanded(
-                                    child: Align(
-                                      alignment: Alignment.bottomCenter,
-                                      child: FractionallySizedBox(
-                                        heightFactor: max == 0 ? 0.02 : (d.reels / max).clamp(0.02, 1.0),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(6),
-                                          child: Column(
-                                            children: [
-                                              for (final app in TrackedApp.values)
-                                                if (d.reelsFor(app) > 0)
-                                                  Expanded(
-                                                    flex: d.reelsFor(app),
-                                                    child: Container(color: appColor(app, scheme)),
-                                                  ),
-                                              if (d.reels == 0)
-                                                Expanded(child: Container(color: scheme.surfaceContainerHighest)),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
+                            child: Align(
+                              alignment: Alignment.bottomCenter,
+                              child: FractionallySizedBox(
+                                heightFactor: max == 0 ? 0.03 : (d.reels / max).clamp(0.03, 1.0),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(compact ? 3 : 7),
+                                  child: Column(
+                                    children: [
+                                      for (final app in TrackedApp.values)
+                                        if (d.reelsFor(app) > 0)
+                                          Expanded(flex: d.reelsFor(app), child: Container(color: appColor(app))),
+                                      if (d.reels == 0) Expanded(child: Container(color: scheme.surfaceContainerHighest)),
+                                    ],
                                   ),
-                                  const SizedBox(height: 6),
-                                  Text(_weekdays[d.date.weekday - 1], style: theme.textTheme.labelSmall),
-                                ],
+                                ),
                               ),
                             ),
                           ),
-                      ],
+                          const SizedBox(height: 6),
+                          if (showWeekday && !compact)
+                            Text(_weekdays[d.date.weekday - 1], style: theme.textTheme.labelSmall)
+                          else if (showWeekday && d.date.day == 1 || (showWeekday && compact && days.indexOf(d) % 7 == 0))
+                            Text('${d.date.day}', style: theme.textTheme.labelSmall)
+                          else
+                            const SizedBox(height: 12),
+                        ],
+                      ),
                     ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                for (final app in TrackedApp.values) ...[
-                  Container(width: 10, height: 10, decoration: BoxDecoration(color: appColor(app, scheme), borderRadius: BorderRadius.circular(3))),
-                  const SizedBox(width: 4),
-                  Text(app.label, style: theme.textTheme.labelSmall),
-                  const SizedBox(width: 12),
-                ],
+                  ),
               ],
             ),
-          ],
-        ),
-      ),
+    );
+  }
+}
+
+class ChartLegend extends StatelessWidget {
+  const ChartLegend({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        for (final app in TrackedApp.values) ...[
+          Container(width: 10, height: 10, decoration: BoxDecoration(color: appColor(app), borderRadius: BorderRadius.circular(3))),
+          const SizedBox(width: 5),
+          Text(app.label, style: theme.textTheme.labelSmall),
+          const SizedBox(width: 14),
+        ],
+      ],
     );
   }
 }
 
 class RecentEventsList extends StatelessWidget {
-  const RecentEventsList({super.key, required this.events});
+  const RecentEventsList({super.key, required this.events, this.limit = 8});
   final List<ReelEvent> events;
+  final int limit;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     if (events.isEmpty) {
-      return const Card(
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Text('Nothing counted yet. Open Instagram Reels or YouTube Shorts and start scrolling.'),
-        ),
+      return const EmptyCard(
+        icon: Icons.movie_outlined,
+        text: 'Nothing counted yet. Open Instagram Reels or YouTube Shorts and start scrolling.',
       );
     }
     return Card(
       child: Column(
         children: [
-          for (final e in events.take(10))
+          for (final e in events.take(limit))
             ListTile(
               dense: true,
-              leading: Icon(
-                e.app == null ? Icons.movie_outlined : appIcon(e.app!),
-                color: e.app == null ? null : appColor(e.app!, theme.colorScheme),
-              ),
-              title: Text('${e.app?.label ?? e.packageName} ${e.app?.unitLabel.substring(0, e.app!.unitLabel.length - 1) ?? 'video'}'),
+              leading: Icon(e.app == null ? Icons.movie_outlined : appIcon(e.app!), color: e.app == null ? null : appColor(e.app!)),
+              title: Text('${e.app?.label ?? e.packageName} ${_singular(e.app)}', style: const TextStyle(fontWeight: FontWeight.w600)),
               subtitle: Text(_time(e.timestamp)),
               trailing: Tooltip(
-                message: e.confidence == 'HIGH'
-                    ? 'Detected via a known Reels/Shorts view id'
-                    : 'Detected via layout heuristics',
-                child: Chip(
-                  label: Text(e.confidence.toLowerCase(), style: theme.textTheme.labelSmall),
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
+                message: e.confidence == 'HIGH' ? 'Detected via a known Reels/Shorts view id' : 'Detected via layout heuristics',
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: (e.confidence == 'HIGH' ? Brand.mint : Brand.amber).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(e.confidence.toLowerCase(), style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w700)),
                 ),
               ),
             ),
@@ -305,6 +396,12 @@ class RecentEventsList extends StatelessWidget {
       ),
     );
   }
+
+  static String _singular(TrackedApp? app) => switch (app) {
+        TrackedApp.instagram => 'Reel',
+        TrackedApp.youtube => 'Short',
+        null => 'video',
+      };
 
   static String _time(DateTime t) {
     final now = DateTime.now();
@@ -315,33 +412,22 @@ class RecentEventsList extends StatelessWidget {
   }
 }
 
-class PrivacyCard extends StatelessWidget {
-  const PrivacyCard({super.key});
+class EmptyCard extends StatelessWidget {
+  const EmptyCard({super.key, required this.icon, required this.text});
+  final IconData icon;
+  final String text;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.all(20),
+        child: Row(
           children: [
-            Row(
-              children: [
-                Icon(Icons.lock_outline, color: theme.colorScheme.primary),
-                const SizedBox(width: 8),
-                Text('Your data stays on this phone', style: theme.textTheme.titleSmall),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '• Only the Instagram and YouTube screens are read; other apps are ignored.\n'
-              '• Counts and times live in a local SQLite database. No account, no sync, no analytics.\n'
-              '• Each detection stores a short hash of the on-screen words, never the words themselves.\n'
-              '• Crash reports (stack traces only) go to Firebase Crashlytics so bugs can be fixed.',
-              style: theme.textTheme.bodySmall,
-            ),
+            Icon(icon, color: theme.colorScheme.onSurfaceVariant),
+            const SizedBox(width: 14),
+            Expanded(child: Text(text, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant))),
           ],
         ),
       ),

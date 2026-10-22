@@ -90,7 +90,14 @@ class ScrollLessAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         val pkg = event.packageName?.toString() ?: return
         if (pkg in Targets.ALL) {
-            if (activePkg != pkg) enterApp(pkg)
+            if (activePkg != pkg) {
+                // A picture-in-picture or minimised window of Instagram/YouTube still emits
+                // events while another app is in front; only count it as "entered" when it
+                // really is the active window.
+                val active = rootInActiveWindow?.packageName?.toString()
+                if (active != null && active != pkg) return
+                enterApp(pkg)
+            }
             handler.removeCallbacks(processRunnable)
             handler.postDelayed(processRunnable, DEBOUNCE_MS)
         } else if (activePkg != null) {
