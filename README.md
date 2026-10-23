@@ -11,12 +11,12 @@ YouTube. Everything is stored in a local SQLite database on the phone.
 | --- | --- |
 | `ScrollLessAccessibilityService` (Kotlin) | Receives window events for Instagram and YouTube, classifies whether the full-screen Reels/Shorts viewer is showing, fingerprints the page under the screen centre and feeds it to the detector. Also times foreground / Reels-surface usage per app. |
 | `SurfaceClassifier` | Finds the vertical pager by known view ids (`clips_viewer_*`, `reel_recycler`) and falls back to layout heuristics (near-full-screen scrollable with Reels/Shorts markers) when ids change. |
-| `FingerprintBuilder` + `ReelDetector` | Turns the visible words of a page (creator, caption, audio) into a token set, ignores counters/timestamps/UI chrome, and counts a video only when a *new* page has been stable on screen for 400 ms, is not similar to the current one, and has not been counted recently. See [docs/LIMITATIONS.md](docs/LIMITATIONS.md). |
+| `FingerprintBuilder` + `ReelDetector` | Turns the visible words of a page (creator, caption, audio) into a token set, ignores counters/timestamps/UI chrome, and counts a video only when a *new* page has stayed on screen for the minimum watch time (default 2 s, adjustable in Settings), is not similar to the current one, and has not been counted recently. See [docs/LIMITATIONS.md](docs/LIMITATIONS.md). |
 | `UsageTracker` | Attributes elapsed time to the active app and to the Reels/Shorts surface; discards gaps when the service was not observing. |
 | `OverlayController` | Draggable floating pill (`TYPE_ACCESSIBILITY_OVERLAY`, so no "draw over other apps" permission) showing today's count and time for the app you are in. Tap opens ScrollLess. |
 | `StatsDatabase` (Kotlin) / `SqliteStatsRepository` (Dart) | One SQLite file, `scrollless.db`: `daily_stats(day, package, reels, surface_ms, foreground_ms)` and `reel_events(ts, day, package, fingerprint, confidence)`. Kotlin writes, Flutter reads through `sqflite`; live updates reach Flutter over an `EventChannel`. |
 | Flutter app | Onboarding → guided Setup screen (accessibility disclosure, add-widget flow, daily goal), three tabs (Today with animated count and goal ring, History with 7/30-day charts, Settings), live banner, per-app cards, recent detections with confidence, overlay toggle, reset / delete, in-app privacy policy, light and dark themes. |
-| `TodayWidgetProvider` (Kotlin) | Home-screen widget (today's count, per-app split, time, goal progress; tap opens the app). Refreshed by the service after each count and once a minute, by the app on data/goal changes, and by the launcher every 30 min. Pinned from inside the app with `requestPinAppWidget`. |
+| `TodayWidgetProvider` / `TodayWidgetLargeProvider` (Kotlin) | Small (2×2) and large (4×3) home-screen widgets, each resizable with size-aware layouts (today's count, per-app split, time, goal progress; tap opens the app). Refreshed by the service after each count and once a minute, by the app on data/goal changes, and by the launcher every 30 min. Pinned from inside the app with `requestPinAppWidget`. |
 
 ## Privacy
 
@@ -99,7 +99,7 @@ are generated with `flutter_launcher_icons` and `flutter_native_splash`
 
 | Suite | Count | Result |
 | --- | --- | --- |
-| Kotlin JVM unit tests (`:app:testDebugUnitTest`) | 31 | pass |
+| Kotlin JVM unit tests (`:app:testDebugUnitTest`) | 33 | pass |
 | Flutter unit + widget tests (`flutter test`) | 17 | pass |
 | `flutter analyze` | – | no issues |
 | Live YouTube Shorts run on a Pixel 7 emulator (release APK) | 7 scenarios | pass, see docs/LIMITATIONS.md |

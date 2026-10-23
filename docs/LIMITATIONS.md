@@ -10,14 +10,18 @@ inflated count.
 
 What is counted:
 
-* A page of the Reels/Shorts pager that stays on screen for at least 400 ms
-  and whose visible words (creator handle, caption, audio title) differ from
-  the page before it (overlap coefficient below 0.6) **or** whose pager
-  index changed.
+* A page of the Reels/Shorts pager that stays on screen for at least the
+  *minimum watch time* (default 2 s; 1 / 2 / 3 / 5 s in Settings → "Count a
+  video after") and whose visible words (creator handle, caption, audio
+  title) differ from the page before it (overlap coefficient below 0.6)
+  **or** whose pager index changed.
 
 What is deliberately *not* counted:
 
-* Pages that fly past during a fast fling (never stable for 400 ms).
+* Pages that fly past during a fast fling or a quick swipe-past (never on
+  screen for the minimum watch time). A video the user flicks away after
+  1.9 s with the default setting is therefore *not* counted; raise or lower
+  the threshold in Settings to taste.
 * The same video seen again after scrolling back (fingerprint ≥ 0.85 similar
   to one of the last 60 counted videos at the same pager index).
 * Content drift on the same page: "…more" caption expansion, like/comment
@@ -72,6 +76,11 @@ Where it can be wrong:
 
 ## Home-screen widget
 
+* Two sizes are offered in the launcher's widget picker and from the app's
+  Setup screen: small (2×2) and large (4×3). Every instance is resizable and
+  switches between the small, medium and large layouts as it grows
+  (Android 12+ picks the layout per size; older versions use the widget's
+  current cell size).
 * Pinning from inside the app needs a launcher that supports
   `requestPinAppWidget` (Pixel Launcher, most OEM launchers on Android 8+).
   Otherwise the app explains how to add it manually.

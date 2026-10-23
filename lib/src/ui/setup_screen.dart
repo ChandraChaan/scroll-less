@@ -116,14 +116,7 @@ class SetupScreen extends StatelessWidget {
                         done: c.widgetAdded,
                         doneText: 'Added to your home screen',
                         actionLabel: c.widgetAdded ? 'Add another' : 'Add widget',
-                        onAction: () async {
-                          final shown = await c.requestPinWidget();
-                          if (!shown && context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                              content: Text('Your launcher does not support adding widgets from apps. Long-press your home screen → Widgets → ScrollLess.'),
-                            ));
-                          }
-                        },
+                        onAction: () => _pickWidgetSize(context, c),
                         preview: const _WidgetPreview(),
                       ),
                       const SizedBox(height: 12),
@@ -162,6 +155,48 @@ class SetupScreen extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+/// Lets the user choose the small or large widget, then opens the launcher's pin sheet.
+Future<void> _pickWidgetSize(BuildContext context, AppController c) async {
+  final large = await showModalBottomSheet<bool>(
+    context: context,
+    showDragHandle: true,
+    builder: (ctx) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text('Choose a size', style: Theme.of(ctx).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.crop_square_rounded),
+            title: const Text('Small · 2 × 2'),
+            subtitle: const Text('Count and goal progress'),
+            onTap: () => Navigator.pop(ctx, false),
+          ),
+          ListTile(
+            leading: const Icon(Icons.crop_landscape_rounded),
+            title: const Text('Large · 4 × 3'),
+            subtitle: const Text('Count, time, Instagram and YouTube split, goal'),
+            onTap: () => Navigator.pop(ctx, true),
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    ),
+  );
+  if (large == null || !context.mounted) return;
+  final shown = await c.requestPinWidget(large: large);
+  if (!shown && context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Your launcher does not support adding widgets from apps. Long-press your home screen → Widgets → ScrollLess.'),
+    ));
   }
 }
 

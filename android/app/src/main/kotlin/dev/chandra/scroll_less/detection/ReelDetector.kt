@@ -20,12 +20,19 @@ package dev.chandra.scroll_less.detection
  * [Decision.Pending] deadline passes.
  */
 class ReelDetector(
-    private val stableMs: Long = 400L,
+    stableMs: Long = DEFAULT_STABLE_MS,
     private val minIntervalMs: Long = 500L,
     private val recentSize: Int = 60,
     private val sameThreshold: Double = 0.6,
     private val duplicateThreshold: Double = 0.85,
 ) {
+    /**
+     * Minimum time a page must stay on screen before it counts as watched.
+     * Pages swiped past faster than this are never counted. Changing it only
+     * affects pages that stabilise afterwards.
+     */
+    @Volatile var stableMs: Long = stableMs
+
     data class Snapshot(
         val pkg: String,
         val onSurface: Boolean,
@@ -48,6 +55,11 @@ class ReelDetector(
         data class Pending(val readyAtMs: Long) : Decision
 
         data object None : Decision
+    }
+
+    companion object {
+        /** 2 s: long enough that a quick flick past a video is not "watched". */
+        const val DEFAULT_STABLE_MS = 2_000L
     }
 
     private class Entry(val fp: Fingerprint, val index: Int?)

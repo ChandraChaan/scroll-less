@@ -21,9 +21,13 @@ abstract class ScrollLessPlatform {
   Future<bool> isWidgetAdded();
   Future<bool> isPinWidgetSupported();
 
-  /// Opens the launcher's "add to home screen" sheet. Returns false when the
-  /// launcher does not support pinning (user must add the widget manually).
-  Future<bool> requestPinWidget();
+  /// Minimum on-screen time before a video counts, in milliseconds.
+  Future<int> getMinWatchMs();
+  Future<void> setMinWatchMs(int ms);
+
+  /// Opens the launcher's "add to home screen" sheet for the small or large
+  /// widget. Returns false when the launcher does not support pinning.
+  Future<bool> requestPinWidget({bool large = false});
 
   /// Live updates from the accessibility service (today's stats, foreground app).
   Stream<LiveState> get liveState;
@@ -88,7 +92,14 @@ class MethodChannelScrollLessPlatform implements ScrollLessPlatform {
   Future<bool> isPinWidgetSupported() async => await _methods.invokeMethod<bool>('isPinWidgetSupported') ?? false;
 
   @override
-  Future<bool> requestPinWidget() async => await _methods.invokeMethod<bool>('requestPinWidget') ?? false;
+  Future<int> getMinWatchMs() async => await _methods.invokeMethod<int>('getMinWatchMs') ?? 2000;
+
+  @override
+  Future<void> setMinWatchMs(int ms) => _methods.invokeMethod<void>('setMinWatchMs', {'ms': ms});
+
+  @override
+  Future<bool> requestPinWidget({bool large = false}) async =>
+      await _methods.invokeMethod<bool>('requestPinWidget', {'large': large}) ?? false;
 
   @override
   Stream<LiveState> get liveState =>

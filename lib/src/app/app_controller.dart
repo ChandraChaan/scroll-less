@@ -27,6 +27,7 @@ class AppController extends ChangeNotifier with WidgetsBindingObserver {
   int dailyGoal = 0;
   bool widgetAdded = false;
   bool pinWidgetSupported = false;
+  int minWatchMs = 2000;
   List<DaySummary> last30 = const [];
   List<ReelEvent> recentEvents = const [];
   Object? error;
@@ -78,6 +79,7 @@ class AppController extends ChangeNotifier with WidgetsBindingObserver {
         platform.getDailyGoal(),
         platform.isWidgetAdded(),
         platform.isPinWidgetSupported(),
+        platform.getMinWatchMs(),
       ]);
       accessibilityEnabled = results[0] as bool;
       overlayEnabled = results[1] as bool;
@@ -87,6 +89,7 @@ class AppController extends ChangeNotifier with WidgetsBindingObserver {
       dailyGoal = results[6] as int;
       widgetAdded = results[7] as bool;
       pinWidgetSupported = results[8] as bool;
+      minWatchMs = results[9] as int;
       final todayRows = results[4] as List<DailyStat>;
       if (todayRows.isNotEmpty) {
         live = LiveState(
@@ -124,9 +127,15 @@ class AppController extends ChangeNotifier with WidgetsBindingObserver {
     await platform.setDailyGoal(goal);
   }
 
+  Future<void> setMinWatchMs(int ms) async {
+    minWatchMs = ms;
+    notifyListeners();
+    await platform.setMinWatchMs(ms);
+  }
+
   /// Returns true when the launcher showed its pin sheet.
-  Future<bool> requestPinWidget() async {
-    final shown = await platform.requestPinWidget();
+  Future<bool> requestPinWidget({bool large = false}) async {
+    final shown = await platform.requestPinWidget(large: large);
     // The sheet is asynchronous; poll a few times so the status updates once the user taps "Add".
     for (var i = 0; i < 6 && !widgetAdded; i++) {
       await Future<void>.delayed(const Duration(seconds: 2));

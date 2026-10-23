@@ -7,6 +7,42 @@ import 'privacy_screen.dart';
 import 'setup_screen.dart' show showGoalDialog;
 import 'widgets.dart';
 
+String _fmtSeconds(int ms) => ms % 1000 == 0 ? '${ms ~/ 1000} s' : '${(ms / 1000).toStringAsFixed(1)} s';
+
+const _watchChoices = [1000, 2000, 3000, 5000];
+
+Future<void> _pickMinWatch(BuildContext context, AppController c) async {
+  final picked = await showDialog<int>(
+    context: context,
+    builder: (ctx) => SimpleDialog(
+      title: const Text('Count a video after'),
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+          child: Text(
+            'A Reel or Short only counts once it has stayed on screen this long. Swiping past faster is treated as not watched.',
+            style: Theme.of(ctx).textTheme.bodySmall,
+          ),
+        ),
+        for (final ms in _watchChoices)
+          ListTile(
+            leading: Icon(ms == c.minWatchMs ? Icons.radio_button_checked : Icons.radio_button_off,
+                color: ms == c.minWatchMs ? Theme.of(ctx).colorScheme.primary : null),
+            title: Text(_fmtSeconds(ms)),
+            subtitle: Text(switch (ms) {
+              1000 => 'Counts almost everything',
+              2000 => 'Recommended',
+              3000 => 'Stricter',
+              _ => 'Only videos you really watched',
+            }),
+            onTap: () => Navigator.pop(ctx, ms),
+          ),
+      ],
+    ),
+  );
+  if (picked != null) await c.setMinWatchMs(picked);
+}
+
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key, required this.controller, required this.appVersion});
   final AppController controller;
@@ -70,6 +106,14 @@ class SettingsScreen extends StatelessWidget {
                       subtitle: Text(c.dailyGoal > 0 ? '${c.dailyGoal} short videos a day' : 'No goal set'),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => showGoalDialog(context, c),
+                    ),
+                    const Divider(indent: 16, endIndent: 16),
+                    ListTile(
+                      leading: const Icon(Icons.timer_outlined),
+                      title: const Text('Count a video after'),
+                      subtitle: Text('${_fmtSeconds(c.minWatchMs)} on screen · faster swipes are ignored'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => _pickMinWatch(context, c),
                     ),
                     const Divider(indent: 16, endIndent: 16),
                     SwitchListTile(

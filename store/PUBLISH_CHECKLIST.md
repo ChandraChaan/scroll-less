@@ -35,8 +35,8 @@ upload every future release.
 | Kotlin JVM tests (`:app:testDebugUnitTest`) | 31 pass |
 | APK signature (`apksigner verify --print-certs`) | verifies, CN=ScrollLess, SHA-256 be8fc89e…34e8 |
 | AAB signature (`jarsigner -verify`) | jar verified, same certificate |
-| Manifest | versionCode 5, versionName 1.2.0, minSdk 26, targetSdk 36; permissions: INTERNET, ACCESS_NETWORK_STATE only (the widget needs no permission) |
-| Live run on Pixel 7 emulator (Android 17, YouTube 21.41) | Shorts counted once per video with HIGH confidence; no counts on the Home tab; overlay shows/hides correctly; picture-in-picture no longer re-triggers the overlay |
+| Manifest | versionCode 5, versionName 1.2.0, minSdk 26, targetSdk 36; permissions: INTERNET, ACCESS_NETWORK_STATE only (widgets need no permission) |
+| Live run on Pixel 7 emulator (Android 17, YouTube 21.41) | Shorts counted once per video with HIGH confidence; no counts on the Home tab; quick swipe-past not counted (2 s minimum watch time); overlay shows/hides correctly; picture-in-picture handled; small and large widgets pinned from the app and updating |
 | Onboarding → disclosure → Accessibility settings | works; disclosure must be accepted before settings open |
 | Crashlytics | Test crashes from 1.0.0 (2) and 1.1.0 (3) both received and grouped under issue `7f5e330e45c17b3f173c1c44386dfe00` (confirmed through the Crashlytics API). The test-crash button was removed in 1.1.0 (4); 1.2.0 ships the same Crashlytics wiring. |
 

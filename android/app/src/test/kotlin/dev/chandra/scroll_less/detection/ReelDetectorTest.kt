@@ -191,6 +191,32 @@ class ReelDetectorTest {
     }
 
     @Test
+    fun `default minimum watch time is two seconds and a quick flick is not counted`() {
+        val h = Harness(ReelDetector())
+        val a = fp("maya", "sunrise", "hampi")
+        h.feed(snap(a, 1000))
+        h.tick(pkg, 2500)          // 1.5 s on screen: not yet
+        assertEquals(0, h.counted.size)
+        h.feed(snap(fp("b1", "b2", "b3"), 2600)) // flicked away before 2 s
+        h.tick(pkg, 4000)          // 1.4 s on the new page
+        assertEquals(0, h.counted.size)
+        h.tick(pkg, 4700)          // 2.1 s: counted
+        assertEquals(1, h.counted.size)
+    }
+
+    @Test
+    fun `minimum watch time can be changed at runtime`() {
+        val d = ReelDetector()
+        val h = Harness(d)
+        d.stableMs = 5_000L
+        h.feed(snap(fp("a1", "a2"), 1000))
+        h.tick(pkg, 4000)
+        assertEquals(0, h.counted.size)
+        h.tick(pkg, 6100)
+        assertEquals(1, h.counted.size)
+    }
+
+    @Test
     fun `rate limit suppresses bursts`() {
         val h = Harness(ReelDetector(stableMs = 0, minIntervalMs = 500))
         h.feed(snap(fp("a1", "a2"), 1000)); h.tick(pkg, 1000)

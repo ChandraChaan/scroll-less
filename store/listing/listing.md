@@ -22,12 +22,12 @@ Counts every Reel and Short you watch and shows how long you scroll. Private.
 ScrollLess shows you the truth about short-video scrolling: how many Instagram Reels and YouTube Shorts you actually watch, and how long you spend doing it — every day, per app, with a live counter floating right over the feed.
 
 HOW IT WORKS
-• Automatic counting. ScrollLess notices each time a new Reel or Short appears on screen and counts it once. Flicking past videos, scrolling back to one you already saw, or expanding a caption doesn't inflate the number.
+• Automatic counting. ScrollLess notices each time a new Reel or Short appears on screen and counts it once. Videos you flick past in under two seconds (adjustable), scrolling back to one you already saw, or expanding a caption don't inflate the number.
 • Time, per app. See how long the Reels or Shorts viewer was open and how long you were in Instagram or YouTube at all — tracked separately for each app.
 • Live floating counter. A small, draggable pill shows today's count and time while you're in Instagram or YouTube. Tap it to open ScrollLess, or turn it off in Settings.
 • History. A 7-day and 30-day view with daily totals, averages per active day and a day-by-day breakdown.
 • Recent detections. Every count is listed with the app, time and detection confidence, so you can see exactly what was counted.
-• Home-screen widget. Today's count, scrolling time and goal progress at a glance. Add it from inside the app with one tap.
+• Home-screen widgets. A small 2×2 and a large 4×3 widget show today's count, scrolling time, the Instagram/YouTube split and goal progress. Add them from inside the app with one tap.
 • Daily goal. Choose how many short videos a day feels right; the floating counter and widget turn amber near the goal and red above it.
 
 PRIVATE BY DESIGN
@@ -75,7 +75,7 @@ Welcome to ScrollLess 1.2
 • Automatic counting of Instagram Reels and YouTube Shorts
 • Scrolling time tracked separately for Instagram and YouTube
 • Live floating counter over the apps
-• New: home-screen widget and daily goal
+• New: small and large home-screen widgets, daily goal, adjustable minimum watch time
 • 7-day and 30-day history
 • 100% on-device: no account, no analytics, no ads
 ```

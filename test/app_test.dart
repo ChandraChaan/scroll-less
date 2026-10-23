@@ -56,9 +56,16 @@ class FakePlatform implements ScrollLessPlatform {
   Future<bool> isWidgetAdded() async => widgetAdded;
   @override
   Future<bool> isPinWidgetSupported() async => true;
+  int minWatchMs = 2000;
   @override
-  Future<bool> requestPinWidget() async {
+  Future<int> getMinWatchMs() async => minWatchMs;
+  @override
+  Future<void> setMinWatchMs(int ms) async => minWatchMs = ms;
+  bool? lastPinLarge;
+  @override
+  Future<bool> requestPinWidget({bool large = false}) async {
     pinRequests++;
+    lastPinLarge = large;
     widgetAdded = true;
     return true;
   }
@@ -165,8 +172,12 @@ void main() {
 
       await reveal(tester, find.text('Add widget'));
       await tester.tap(find.text('Add widget'));
+      await settle(tester, 5);
+      expect(find.text('Choose a size'), findsOneWidget);
+      await tester.tap(find.text('Large · 4 × 3'));
       await tester.pump(const Duration(seconds: 3));
       expect(platform.pinRequests, 1);
+      expect(platform.lastPinLarge, isTrue);
       expect(c.widgetAdded, isTrue);
       await tester.pump(const Duration(seconds: 15));
       expect(find.text('Added to your home screen'), findsOneWidget);
@@ -258,6 +269,12 @@ void main() {
       await tester.tap(find.text('Reset'));
       await tester.pumpAndSettle();
       expect(platform.resetCalls, 1);
+      await reveal(tester, find.text('Count a video after'));
+      await tester.tap(find.text('Count a video after'));
+      await settle(tester, 5);
+      await tester.tap(find.text('5 s'));
+      await settle(tester, 5);
+      expect(platform.minWatchMs, 5000);
       await reveal(tester, find.text('1.2.0 (5)'));
       expect(find.text('1.2.0 (5)'), findsOneWidget);
     });

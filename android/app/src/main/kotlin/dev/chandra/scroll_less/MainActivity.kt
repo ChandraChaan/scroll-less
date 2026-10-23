@@ -57,9 +57,15 @@ class MainActivity : FlutterActivity() {
                         TodayWidgetProvider.updateAll(this)
                         result.success(null)
                     }
+                    "getMinWatchMs" -> result.success(Goals.minWatchMs(this).toInt())
+                    "setMinWatchMs" -> {
+                        Goals.setMinWatchMs(this, (call.argument<Int>("ms") ?: 2000).toLong())
+                        ScrollLessAccessibilityService.instance?.onMinWatchChanged()
+                        result.success(null)
+                    }
                     "isWidgetAdded" -> result.success(TodayWidgetProvider.isAdded(this))
                     "isPinWidgetSupported" -> result.success(TodayWidgetProvider.isPinSupported(this))
-                    "requestPinWidget" -> result.success(TodayWidgetProvider.requestPin(this))
+                    "requestPinWidget" -> result.success(TodayWidgetProvider.requestPin(this, call.argument<Boolean>("large") ?: false))
                     "getDatabaseName" -> result.success(StatsDatabase.NAME)
                     else -> result.notImplemented()
                 }

@@ -71,6 +71,7 @@ class ScrollLessAccessibilityService : AccessibilityService() {
         instance = this
         connectedAtMs = SystemClock.elapsedRealtime()
         db = StatsDatabase.get(this)
+        detector.stableMs = Goals.minWatchMs(this)
         overlay = OverlayController(this)
         val dm = resources.displayMetrics
         classifier = SurfaceClassifier(dm.widthPixels, dm.heightPixels)
@@ -287,6 +288,10 @@ class ScrollLessAccessibilityService : AccessibilityService() {
                 "stats" to db.statsForDay(today).map { it.toMap() },
             ),
         )
+    }
+
+    fun onMinWatchChanged() {
+        detector.stableMs = Goals.minWatchMs(this)
     }
 
     fun onOverlayPreferenceChanged() {
