@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/models.dart';
 import '../data/stats_repository.dart';
 import '../theme/app_theme.dart';
+import 'feed_animation.dart';
 
 Color appColor(TrackedApp app) => switch (app) {
       TrackedApp.instagram => Brand.instagram,
@@ -80,6 +81,34 @@ class SetupCard extends StatelessWidget {
   }
 }
 
+/// Small nudge shown while the home-screen widget is not added.
+class WidgetNudge extends StatelessWidget {
+  const WidgetNudge({super.key, required this.onAdd});
+  final VoidCallback onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(color: Brand.coral.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(12)),
+          child: const Icon(Icons.widgets_rounded, color: Brand.coral),
+        ),
+        title: Text('Add the home-screen widget', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+        subtitle: const Text('Today\'s count and goal at a glance'),
+        trailing: FilledButton(
+          key: const Key('nudge-add-widget'),
+          onPressed: onAdd,
+          style: FilledButton.styleFrom(minimumSize: const Size(0, 40), padding: const EdgeInsets.symmetric(horizontal: 14)),
+          child: const Text('Add'),
+        ),
+      ),
+    );
+  }
+}
+
 class LiveBanner extends StatelessWidget {
   const LiveBanner({super.key, required this.app, required this.onSurface});
   final TrackedApp app;
@@ -108,16 +137,19 @@ class LiveBanner extends StatelessWidget {
   }
 }
 
-/// Big "today" card with count, time and comparison to yesterday.
+/// Big "today" card: animated count, looping feed illustration inside the
+/// goal ring, time stats and comparison with yesterday.
 class TodayHero extends StatelessWidget {
-  const TodayHero({super.key, required this.total, this.yesterday});
+  const TodayHero({super.key, required this.total, this.yesterday, this.goal = 0});
   final DailyStat total;
   final DaySummary? yesterday;
+  final int goal;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final delta = yesterday == null ? null : total.reels - yesterday!.reels;
+    final progress = goal > 0 ? total.reels / goal : 0.0;
     return Container(
       decoration: BoxDecoration(
         gradient: Brand.gradient,
@@ -132,23 +164,38 @@ class TodayHero extends StatelessWidget {
             children: [
               Text('TODAY', style: theme.textTheme.labelMedium?.copyWith(color: Colors.white70, letterSpacing: 1.5, fontWeight: FontWeight.w700)),
               const Spacer(),
-              if (delta != null)
-                _DeltaChip(delta: delta),
+              ?delta == null ? null : _DeltaChip(delta: delta),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                '${total.reels}',
-                key: const Key('today-total-count'),
-                style: theme.textTheme.displayLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w800, height: 1, letterSpacing: -2),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AnimatedCount(
+                      key: const Key('today-total-count'),
+                      value: total.reels,
+                      style: theme.textTheme.displayLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w800, height: 1, letterSpacing: -2),
+                    ),
+                    const SizedBox(height: 6),
+                    Text('short videos', style: theme.textTheme.titleMedium?.copyWith(color: Colors.white.withValues(alpha: 0.9))),
+                    if (goal > 0) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        total.reels > goal ? '${total.reels - goal} over your goal of $goal' : '${goal - total.reels} left of your $goal goal',
+                        style: theme.textTheme.bodySmall?.copyWith(color: total.reels > goal ? const Color(0xFFFFB4B4) : Colors.white70, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ],
+                ),
               ),
-              const SizedBox(width: 10),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text('short videos', style: theme.textTheme.titleMedium?.copyWith(color: Colors.white.withValues(alpha: 0.9))),
+              GoalRing(
+                progress: goal > 0 ? progress : 0,
+                size: 104,
+                track: goal > 0 ? Colors.white24 : Colors.transparent,
+                child: const FeedAnimation(size: 72),
               ),
             ],
           ),

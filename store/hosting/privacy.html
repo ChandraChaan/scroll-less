@@ -22,7 +22,7 @@ a{color:#4f46e5}
 <ul>
 <li>Daily totals per app: number of videos counted, time with the Reels/Shorts viewer on screen, time with the app in the foreground.</li>
 <li>One record per counted video: timestamp, app, a detection-confidence label and a 16-character hash derived from the words visible on screen. The words themselves are never stored.</li>
-<li>Your preferences: whether the floating counter is enabled, its position, and whether onboarding was completed.</li>
+<li>Your preferences: whether the floating counter is enabled, its position, your daily goal, and whether onboarding was completed. The home-screen widget reads the same local database and shows nothing to other apps.</li>
 </ul>
 <p>Everything is kept in the app's private storage (a local SQLite database). It is not backed up to any server by ScrollLess. You can delete today's data or all data at any time from Settings inside the app, and uninstalling the app removes everything.</p>
 

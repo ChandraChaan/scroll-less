@@ -32,6 +32,7 @@ class OverlayController(private val service: AccessibilityService) {
     private var root: LinearLayout? = null
     private var countView: TextView? = null
     private var timeView: TextView? = null
+    private var dotView: View? = null
     private var attached = false
 
     private val params = WindowManager.LayoutParams(
@@ -75,9 +76,20 @@ class OverlayController(private val service: AccessibilityService) {
         attached = false
     }
 
-    fun update(count: Int, surfaceMs: Long, unit: String) {
-        countView?.text = "$count $unit"
+    /**
+     * [count] is for the app currently open; [totalToday] across both apps is
+     * compared with the daily [goal] (0 = none) to colour the status dot.
+     */
+    fun update(count: Int, surfaceMs: Long, unit: String, totalToday: Int = count, goal: Int = 0) {
+        countView?.text = if (goal > 0) "$count $unit  ·  $totalToday/$goal" else "$count $unit"
         timeView?.text = formatDuration(surfaceMs)
+        val color = when {
+            goal <= 0 -> Color.rgb(255, 92, 120)
+            totalToday > goal -> Color.rgb(255, 59, 48)
+            totalToday >= goal * 0.8 -> Color.rgb(245, 158, 11)
+            else -> Color.rgb(45, 212, 191)
+        }
+        (dotView?.background as? GradientDrawable)?.setColor(color)
     }
 
     fun destroy() {
@@ -85,6 +97,7 @@ class OverlayController(private val service: AccessibilityService) {
         root = null
         countView = null
         timeView = null
+        dotView = null
     }
 
     private fun build(): LinearLayout {
@@ -124,6 +137,7 @@ class OverlayController(private val service: AccessibilityService) {
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
             text = "0m"
         }
+        dotView = dot
         pill.addView(dot)
         pill.addView(count)
         pill.addView(sep)

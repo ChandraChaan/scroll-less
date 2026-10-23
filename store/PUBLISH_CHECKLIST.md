@@ -1,17 +1,17 @@
 # ScrollLess – Play Store publish checklist
 
-Version **1.1.0 (versionCode 4)** · package `dev.chandra.scroll_less` · built 2026-10-22
+Version **1.2.0 (versionCode 5)** · package `dev.chandra.scroll_less` · built 2026-10-22
 
 ## 1. Artifacts (all under `store/`)
 
 | What | Path | Status |
 | --- | --- | --- |
-| Signed release AAB (upload this to Play) | `store/release/scrollless-1.1.0-4-release.aab` | built, `jarsigner -verify` OK |
-| Signed release APK (testers / sideload) | `store/release/scrollless-1.1.0-4-release.apk` | built, `apksigner verify` OK (v2) |
+| Signed release AAB (upload this to Play) | `store/release/scrollless-1.2.0-5-release.aab` | built, `jarsigner -verify` OK |
+| Signed release APK (testers / sideload) | `store/release/scrollless-1.2.0-5-release.apk` | built, `apksigner verify` OK (v2) |
 | Checksums | `store/release/SHA256SUMS.txt` | |
 | Play Store icon 512×512 (no alpha) | `store/graphics/play_store_icon_512.png` | |
 | Feature graphic 1024×500 | `store/graphics/feature_graphic.png` | |
-| Phone screenshots 1080×2400 (6) | `store/screenshots/phone/01_today.png` … `06_dark_mode.png` | captured from the release build on a Pixel 7 emulator, framed |
+| Phone screenshots 1080×2400 (8) | `store/screenshots/phone/01_today.png` … `08_dark_mode.png` | captured from the release build on a Pixel 7 emulator, framed |
 | Raw unframed screenshots | `store/screenshots/raw/` | |
 | Tablet screenshots | not produced | optional for phones-only apps; see §6 |
 | Brand sources (SVG + PNG) | `assets/brand/` | |
@@ -31,14 +31,14 @@ upload every future release.
 | Check | Result |
 | --- | --- |
 | `flutter analyze` | no issues |
-| Flutter tests (`flutter test`) | 15 pass |
+| Flutter tests (`flutter test`) | 17 pass |
 | Kotlin JVM tests (`:app:testDebugUnitTest`) | 31 pass |
 | APK signature (`apksigner verify --print-certs`) | verifies, CN=ScrollLess, SHA-256 be8fc89e…34e8 |
 | AAB signature (`jarsigner -verify`) | jar verified, same certificate |
-| Manifest | versionCode 4, versionName 1.1.0, minSdk 26, targetSdk 36; permissions: INTERNET, ACCESS_NETWORK_STATE only |
+| Manifest | versionCode 5, versionName 1.2.0, minSdk 26, targetSdk 36; permissions: INTERNET, ACCESS_NETWORK_STATE only (the widget needs no permission) |
 | Live run on Pixel 7 emulator (Android 17, YouTube 21.41) | Shorts counted once per video with HIGH confidence; no counts on the Home tab; overlay shows/hides correctly; picture-in-picture no longer re-triggers the overlay |
 | Onboarding → disclosure → Accessibility settings | works; disclosure must be accepted before settings open |
-| Crashlytics | Test crashes from 1.0.0 (2) and 1.1.0 (3) both received and grouped under issue `7f5e330e45c17b3f173c1c44386dfe00` (confirmed through the Crashlytics API). The test-crash button is removed in 1.1.0 (4). |
+| Crashlytics | Test crashes from 1.0.0 (2) and 1.1.0 (3) both received and grouped under issue `7f5e330e45c17b3f173c1c44386dfe00` (confirmed through the Crashlytics API). The test-crash button was removed in 1.1.0 (4); 1.2.0 ships the same Crashlytics wiring. |
 
 ## 3. Things only you can do (manual)
 
@@ -76,7 +76,7 @@ upload every future release.
 4. **App content → Sensitive permissions / AccessibilityService API**: fill the
    declaration with the text from `permissions_declaration.md`.
 5. **Testing → Internal testing → Create release**: upload
-   `scrollless-1.1.0-4-release.aab`, paste release notes, save, review, roll out.
+   `scrollless-1.2.0-5-release.aab`, paste release notes, save, review, roll out.
    Install from the internal-testing link on a real phone and do the Instagram check.
 6. **Closed testing** (required for new personal accounts): promote the same build,
    add testers, run for 14 days, then apply for production access.

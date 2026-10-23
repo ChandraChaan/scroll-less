@@ -9,6 +9,8 @@ import dev.chandra.scroll_less.data.StatsBus
 import dev.chandra.scroll_less.data.StatsDatabase
 import dev.chandra.scroll_less.overlay.OverlayController
 import dev.chandra.scroll_less.service.ScrollLessAccessibilityService
+import dev.chandra.scroll_less.settings.Goals
+import dev.chandra.scroll_less.widget.TodayWidgetProvider
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
@@ -22,6 +24,7 @@ class MainActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
         val db = StatsDatabase.get(this)
         db.writableDatabase // make sure the schema exists before Flutter opens the file
+        TodayWidgetProvider.updateAll(this)
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, METHOD_CHANNEL).setMethodCallHandler { call, result ->
             try {
@@ -46,8 +49,17 @@ class MainActivity : FlutterActivity() {
                     "getTodayStats" -> result.success(db.statsForDay(StatsDatabase.today()).map { it.toMap() })
                     "getHistory" -> result.success(db.history(call.argument<Int>("days") ?: 7).map { it.toMap() })
                     "getRecentEvents" -> result.success(db.recentEvents(call.argument<Int>("limit") ?: 20).map { it.toMap() })
-                    "resetToday" -> { db.resetDay(StatsDatabase.today()); result.success(null) }
-                    "clearAllData" -> { db.clearAll(); result.success(null) }
+                    "resetToday" -> { db.resetDay(StatsDatabase.today()); TodayWidgetProvider.updateAll(this); result.success(null) }
+                    "clearAllData" -> { db.clearAll(); TodayWidgetProvider.updateAll(this); result.success(null) }
+                    "getDailyGoal" -> result.success(Goals.dailyGoal(this))
+                    "setDailyGoal" -> {
+                        Goals.setDailyGoal(this, call.argument<Int>("goal") ?: 0)
+                        TodayWidgetProvider.updateAll(this)
+                        result.success(null)
+                    }
+                    "isWidgetAdded" -> result.success(TodayWidgetProvider.isAdded(this))
+                    "isPinWidgetSupported" -> result.success(TodayWidgetProvider.isPinSupported(this))
+                    "requestPinWidget" -> result.success(TodayWidgetProvider.requestPin(this))
                     "getDatabaseName" -> result.success(StatsDatabase.NAME)
                     else -> result.notImplemented()
                 }

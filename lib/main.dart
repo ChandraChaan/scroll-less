@@ -14,7 +14,7 @@ import 'src/theme/app_theme.dart';
 import 'src/ui/app_shell.dart';
 import 'src/ui/onboarding_screen.dart';
 
-const appVersion = String.fromEnvironment('APP_VERSION', defaultValue: '1.1.0');
+const appVersion = String.fromEnvironment('APP_VERSION', defaultValue: '1.2.0');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

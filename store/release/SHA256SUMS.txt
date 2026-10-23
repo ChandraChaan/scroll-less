@@ -1,2 +1,2 @@
-b709f1b1d63cbe167bb406d4e369d5bca747e774e1666be3df8bb4068be69ae4  scrollless-1.1.0-4-release.aab
-c0ee16a82880416f89c78cd0f792db473e81995be4ab82317d02df67aabbafb6  scrollless-1.1.0-4-release.apk
+34a551ab2c4619569d23dda99bda902cdda303d96c480f9bd98371db56367273  scrollless-1.2.0-5-release.aab
+4c8ea6d01c3e0d34f211df605b5333014105371e17598426d00975ecad4cc86d  scrollless-1.2.0-5-release.apk

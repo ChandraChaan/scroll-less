@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 
 import '../app/app_controller.dart';
 import '../theme/app_theme.dart';
-import 'accessibility_disclosure.dart';
+import 'feed_animation.dart';
+import 'setup_screen.dart';
 
 /// Three-step first-run flow: what the app does, how privacy works, enable
 /// the service. Finishes with the accessibility disclosure.
@@ -28,6 +29,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   static const _steps = [
     _Step(
       icon: Icons.play_circle_outline_rounded,
+      animated: true,
       title: 'Know how much you scroll',
       body:
           'ScrollLess counts every Instagram Reel and YouTube Short you watch and shows a live counter right over the app.',
@@ -55,7 +57,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _finish() async {
     await widget.controller.preferences.setOnboardingDone(true);
     if (!mounted) return;
-    await showAccessibilityDisclosure(context, widget.controller);
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (ctx) => SetupScreen(
+          controller: widget.controller,
+          onDone: () => Navigator.of(ctx).pop(),
+        ),
+      ),
+    );
     widget.onDone();
   }
 
@@ -126,7 +135,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Text(
-                      'You will be asked to turn on the Accessibility service next.',
+                      'Next: a short guided setup (accessibility, widget, daily goal).',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: Colors.white70,
                       ),
@@ -142,8 +151,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 }
 
 class _Step {
-  const _Step({required this.icon, required this.title, required this.body});
+  const _Step({required this.icon, required this.title, required this.body, this.animated = false});
   final IconData icon;
+  final bool animated;
   final String title;
   final String body;
 }
@@ -161,14 +171,14 @@ class _StepView extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 120,
-            height: 120,
+            width: 132,
+            height: 132,
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(36),
+              borderRadius: BorderRadius.circular(40),
               border: Border.all(color: Colors.white24),
             ),
-            child: Icon(step.icon, size: 60, color: Colors.white),
+            child: step.animated ? const Center(child: FeedAnimation(size: 96)) : Icon(step.icon, size: 60, color: Colors.white),
           ),
           const SizedBox(height: 36),
           Text(

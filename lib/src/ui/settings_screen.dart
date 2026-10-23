@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../app/app_controller.dart';
 import 'accessibility_disclosure.dart';
+import 'home_screen.dart' show openSetup;
 import 'privacy_screen.dart';
+import 'setup_screen.dart' show showGoalDialog;
 import 'widgets.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -52,6 +54,22 @@ class SettingsScreen extends StatelessWidget {
                       subtitle: Text(enabled == null ? 'Checking…' : (enabled ? 'On · counting Reels and Shorts' : 'Off · counting is paused')),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => showAccessibilityDisclosure(context, c),
+                    ),
+                    const Divider(indent: 16, endIndent: 16),
+                    ListTile(
+                      leading: const Icon(Icons.widgets_rounded),
+                      title: const Text('Home-screen widget'),
+                      subtitle: Text(c.widgetAdded ? 'Added' : 'Not added yet'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => openSetup(context, c),
+                    ),
+                    const Divider(indent: 16, endIndent: 16),
+                    ListTile(
+                      leading: const Icon(Icons.flag_rounded),
+                      title: const Text('Daily goal'),
+                      subtitle: Text(c.dailyGoal > 0 ? '${c.dailyGoal} short videos a day' : 'No goal set'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => showGoalDialog(context, c),
                     ),
                     const Divider(indent: 16, endIndent: 16),
                     SwitchListTile(

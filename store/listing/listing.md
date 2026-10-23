@@ -27,6 +27,8 @@ HOW IT WORKS
 • Live floating counter. A small, draggable pill shows today's count and time while you're in Instagram or YouTube. Tap it to open ScrollLess, or turn it off in Settings.
 • History. A 7-day and 30-day view with daily totals, averages per active day and a day-by-day breakdown.
 • Recent detections. Every count is listed with the app, time and detection confidence, so you can see exactly what was counted.
+• Home-screen widget. Today's count, scrolling time and goal progress at a glance. Add it from inside the app with one tap.
+• Daily goal. Choose how many short videos a day feels right; the floating counter and widget turn amber near the goal and red above it.
 
 PRIVATE BY DESIGN
 • Everything is stored on your phone in a local database. There is no account, no sync, no analytics and no ads.
@@ -63,16 +65,17 @@ ScrollLess is not affiliated with Instagram, Meta, YouTube or Google. Instagram 
 | --- | --- | --- |
 | App icon | 512×512 PNG, no alpha | `store/graphics/play_store_icon_512.png` |
 | Feature graphic | 1024×500 PNG/JPG | `store/graphics/feature_graphic.png` |
-| Phone screenshots | 2–8, 16:9 to 9:16, min 320px, max 3840px | `store/screenshots/phone/*.png` (1080×2400) |
+| Phone screenshots | 2–8, 16:9 to 9:16, min 320px, max 3840px | `store/screenshots/phone/*.png` (1080×2400, 8 images) |
 | 7-inch tablet screenshots | optional, up to 8 | `store/screenshots/tablet/*.png` (if present) |
 
 ## Release notes (en-US)
 
 ```
-Welcome to ScrollLess 1.1
+Welcome to ScrollLess 1.2
 • Automatic counting of Instagram Reels and YouTube Shorts
 • Scrolling time tracked separately for Instagram and YouTube
 • Live floating counter over the apps
+• New: home-screen widget and daily goal
 • 7-day and 30-day history
 • 100% on-device: no account, no analytics, no ads
 ```

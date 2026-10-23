@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../app/app_controller.dart';
 import '../data/models.dart';
-import 'accessibility_disclosure.dart';
+import 'setup_screen.dart';
 import 'widgets.dart';
+
+/// Pushes the guided setup screen.
+Future<void> openSetup(BuildContext context, AppController c) =>
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => SetupScreen(controller: c)));
 
 /// "Today" tab.
 class HomeScreen extends StatelessWidget {
@@ -39,14 +43,18 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 if (c.accessibilityEnabled == false) ...[
-                  SetupCard(onEnable: () => showAccessibilityDisclosure(context, c)),
+                  SetupCard(onEnable: () => openSetup(context, c)),
+                  const SizedBox(height: 14),
+                ],
+                if (c.accessibilityEnabled == true && !c.widgetAdded && c.pinWidgetSupported) ...[
+                  WidgetNudge(onAdd: () => openSetup(context, c)),
                   const SizedBox(height: 14),
                 ],
                 if (c.accessibilityEnabled == true && live.activeApp != null) ...[
                   LiveBanner(app: live.activeApp!, onSurface: live.onSurface),
                   const SizedBox(height: 14),
                 ],
-                TodayHero(total: live.total, yesterday: c.yesterday),
+                TodayHero(total: live.total, yesterday: c.yesterday, goal: c.dailyGoal),
                 const SizedBox(height: 14),
                 Row(
                   children: [

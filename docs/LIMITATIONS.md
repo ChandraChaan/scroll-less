@@ -64,6 +64,21 @@ Where it can be wrong:
   All six detections were `HIGH` confidence (`reel_recycler` found). The
   floating pill showed the running count and time over Shorts and the
   dashboard reflected the same numbers.
+* 1.2.0 on the same emulator: the in-app "Add widget" button opened the
+  launcher's "Add to home screen" sheet (with the widget's live preview),
+  the app detected the pinned widget, the widget showed the running count,
+  per-app split, time and goal bar after a Shorts session, and the overlay
+  showed `21 Shorts · 21/30 · 1m` with the goal-aware status dot.
+
+## Home-screen widget
+
+* Pinning from inside the app needs a launcher that supports
+  `requestPinAppWidget` (Pixel Launcher, most OEM launchers on Android 8+).
+  Otherwise the app explains how to add it manually.
+* The widget refreshes after every counted video and once a minute while a
+  tracked app is open; otherwise the launcher refreshes it every 30 minutes,
+  so after midnight it can show yesterday's numbers for up to half an hour
+  until the app, the service or the launcher updates it.
 * Instagram could not be exercised live (the emulator has no signed-in
   Instagram account). Its id list (`clips_viewer_view_pager`,
   `clips_video_container`, …) comes from public accessibility dumps of the

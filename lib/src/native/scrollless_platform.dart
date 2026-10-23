@@ -16,6 +16,14 @@ abstract class ScrollLessPlatform {
   Future<List<ReelEvent>> getRecentEvents(int limit);
   Future<void> resetToday();
   Future<void> clearAllData();
+  Future<int> getDailyGoal();
+  Future<void> setDailyGoal(int goal);
+  Future<bool> isWidgetAdded();
+  Future<bool> isPinWidgetSupported();
+
+  /// Opens the launcher's "add to home screen" sheet. Returns false when the
+  /// launcher does not support pinning (user must add the widget manually).
+  Future<bool> requestPinWidget();
 
   /// Live updates from the accessibility service (today's stats, foreground app).
   Stream<LiveState> get liveState;
@@ -66,6 +74,21 @@ class MethodChannelScrollLessPlatform implements ScrollLessPlatform {
 
   @override
   Future<void> clearAllData() => _methods.invokeMethod<void>('clearAllData');
+
+  @override
+  Future<int> getDailyGoal() async => await _methods.invokeMethod<int>('getDailyGoal') ?? 0;
+
+  @override
+  Future<void> setDailyGoal(int goal) => _methods.invokeMethod<void>('setDailyGoal', {'goal': goal});
+
+  @override
+  Future<bool> isWidgetAdded() async => await _methods.invokeMethod<bool>('isWidgetAdded') ?? false;
+
+  @override
+  Future<bool> isPinWidgetSupported() async => await _methods.invokeMethod<bool>('isPinWidgetSupported') ?? false;
+
+  @override
+  Future<bool> requestPinWidget() async => await _methods.invokeMethod<bool>('requestPinWidget') ?? false;
 
   @override
   Stream<LiveState> get liveState =>

@@ -22,7 +22,7 @@ class PrivacyScreen extends StatelessWidget {
               'ScrollLess uses Android\'s Accessibility API to observe the Instagram and YouTube screens. It uses this to detect when a new Reel or Short is shown and to measure how long those screens are visible. For every other app it only receives the package name of the window that came to the front, so it can stop the timers; their content is never read.'),
           _h(theme, 'What is stored'),
           _p(theme,
-              'Per-day counts and durations for Instagram and YouTube, plus one row per counted video containing a timestamp and a short hash derived from the words on screen. The words themselves are never stored. All of this lives in a local SQLite database inside the app\'s private storage and can be deleted at any time from Settings.'),
+              'Per-day counts and durations for Instagram and YouTube, plus one row per counted video containing a timestamp and a short hash derived from the words on screen. The words themselves are never stored. All of this lives in a local SQLite database inside the app\'s private storage and can be deleted at any time from Settings. The home-screen widget and your daily goal read the same local data.'),
           _h(theme, 'What leaves the device'),
           _p(theme,
               'Only crash reports, sent to Firebase Crashlytics, containing a stack trace, device model, OS version, app version and an installation identifier. No screen content, counts, or account information are ever transmitted. ScrollLess has no account system, no analytics, and no advertising.'),

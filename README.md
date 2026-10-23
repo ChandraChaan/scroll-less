@@ -15,7 +15,8 @@ YouTube. Everything is stored in a local SQLite database on the phone.
 | `UsageTracker` | Attributes elapsed time to the active app and to the Reels/Shorts surface; discards gaps when the service was not observing. |
 | `OverlayController` | Draggable floating pill (`TYPE_ACCESSIBILITY_OVERLAY`, so no "draw over other apps" permission) showing today's count and time for the app you are in. Tap opens ScrollLess. |
 | `StatsDatabase` (Kotlin) / `SqliteStatsRepository` (Dart) | One SQLite file, `scrollless.db`: `daily_stats(day, package, reels, surface_ms, foreground_ms)` and `reel_events(ts, day, package, fingerprint, confidence)`. Kotlin writes, Flutter reads through `sqflite`; live updates reach Flutter over an `EventChannel`. |
-| Flutter app | Onboarding with the Play-required Accessibility disclosure, three tabs (Today, History with 7/30-day charts, Settings), live banner, per-app cards, recent detections with confidence, overlay toggle, reset / delete, in-app privacy policy, light and dark themes. |
+| Flutter app | Onboarding → guided Setup screen (accessibility disclosure, add-widget flow, daily goal), three tabs (Today with animated count and goal ring, History with 7/30-day charts, Settings), live banner, per-app cards, recent detections with confidence, overlay toggle, reset / delete, in-app privacy policy, light and dark themes. |
+| `TodayWidgetProvider` (Kotlin) | Home-screen widget (today's count, per-app split, time, goal progress; tap opens the app). Refreshed by the service after each count and once a minute, by the app on data/goal changes, and by the launcher every 30 min. Pinned from inside the app with `requestPinAppWidget`. |
 
 ## Privacy
 
@@ -99,7 +100,7 @@ are generated with `flutter_launcher_icons` and `flutter_native_splash`
 | Suite | Count | Result |
 | --- | --- | --- |
 | Kotlin JVM unit tests (`:app:testDebugUnitTest`) | 31 | pass |
-| Flutter unit + widget tests (`flutter test`) | 15 | pass |
+| Flutter unit + widget tests (`flutter test`) | 17 | pass |
 | `flutter analyze` | – | no issues |
 | Live YouTube Shorts run on a Pixel 7 emulator (release APK) | 7 scenarios | pass, see docs/LIMITATIONS.md |
 | Crashlytics end-to-end (test crash → issue) | 2 builds | 1.0.0 and 1.1.0 (3) both confirmed via the Crashlytics API |

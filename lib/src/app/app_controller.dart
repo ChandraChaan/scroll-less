@@ -24,6 +24,9 @@ class AppController extends ChangeNotifier with WidgetsBindingObserver {
   bool? accessibilityEnabled;
   bool overlayEnabled = true;
   bool disclosureAccepted = false;
+  int dailyGoal = 0;
+  bool widgetAdded = false;
+  bool pinWidgetSupported = false;
   List<DaySummary> last30 = const [];
   List<ReelEvent> recentEvents = const [];
   Object? error;
@@ -72,12 +75,18 @@ class AppController extends ChangeNotifier with WidgetsBindingObserver {
         repository.recentEvents(limit: 30),
         platform.getTodayStats(),
         preferences.disclosureAccepted,
+        platform.getDailyGoal(),
+        platform.isWidgetAdded(),
+        platform.isPinWidgetSupported(),
       ]);
       accessibilityEnabled = results[0] as bool;
       overlayEnabled = results[1] as bool;
       last30 = summarizeByDay(results[2] as List<DailyStat>, days: 30);
       recentEvents = results[3] as List<ReelEvent>;
       disclosureAccepted = results[5] as bool;
+      dailyGoal = results[6] as int;
+      widgetAdded = results[7] as bool;
+      pinWidgetSupported = results[8] as bool;
       final todayRows = results[4] as List<DailyStat>;
       if (todayRows.isNotEmpty) {
         live = LiveState(
@@ -108,6 +117,27 @@ class AppController extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> openAccessibilitySettings() => platform.openAccessibilitySettings();
+
+  Future<void> setDailyGoal(int goal) async {
+    dailyGoal = goal;
+    notifyListeners();
+    await platform.setDailyGoal(goal);
+  }
+
+  /// Returns true when the launcher showed its pin sheet.
+  Future<bool> requestPinWidget() async {
+    final shown = await platform.requestPinWidget();
+    // The sheet is asynchronous; poll a few times so the status updates once the user taps "Add".
+    for (var i = 0; i < 6 && !widgetAdded; i++) {
+      await Future<void>.delayed(const Duration(seconds: 2));
+      widgetAdded = await platform.isWidgetAdded();
+      notifyListeners();
+    }
+    return shown;
+  }
+
+  /// True when every recommended setup step is done.
+  bool get setupComplete => accessibilityEnabled == true && widgetAdded;
 
   Future<void> resetToday() async {
     await platform.resetToday();

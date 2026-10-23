@@ -19,7 +19,9 @@ import dev.chandra.scroll_less.detection.ReelDetector
 import dev.chandra.scroll_less.detection.SurfaceClassifier
 import dev.chandra.scroll_less.detection.Targets
 import dev.chandra.scroll_less.overlay.OverlayController
+import dev.chandra.scroll_less.settings.Goals
 import dev.chandra.scroll_less.tracking.UsageTracker
+import dev.chandra.scroll_less.widget.TodayWidgetProvider
 
 /**
  * The heart of ScrollLess.
@@ -47,6 +49,7 @@ class ScrollLessAccessibilityService : AccessibilityService() {
     private var activeOnSurface = false
     private var lastPublishMs = 0L
     private var connectedAtMs = 0L
+    private var lastWidgetMs = 0L
 
     private val processRunnable = Runnable { process() }
     private val pendingRunnable = Runnable { settlePending() }
@@ -181,6 +184,7 @@ class ScrollLessAccessibilityService : AccessibilityService() {
         handler.removeCallbacks(pendingRunnable)
         if (::overlay.isInitialized) overlay.hide()
         publish(force = true)
+        refreshWidget(force = true)
     }
 
     private fun process() {
@@ -229,6 +233,7 @@ class ScrollLessAccessibilityService : AccessibilityService() {
                 )
                 Log.d(TAG, "counted ${Targets.unitLabel(pkg)} ${decision.fingerprint.key} (${decision.confidence})")
                 publish(force = true)
+                refreshWidget(force = true)
             }
             is ReelDetector.Decision.Pending -> {
                 handler.removeCallbacks(pendingRunnable)
@@ -245,6 +250,14 @@ class ScrollLessAccessibilityService : AccessibilityService() {
         applyUsage(SystemClock.elapsedRealtime())
         activePkg?.let { refreshOverlay(it) }
         publish()
+        refreshWidget()
+    }
+
+    private fun refreshWidget(force: Boolean = false) {
+        val now = SystemClock.elapsedRealtime()
+        if (!force && now - lastWidgetMs < WIDGET_MIN_INTERVAL_MS) return
+        lastWidgetMs = now
+        runCatching { TodayWidgetProvider.updateAll(this) }
     }
 
     private fun applyUsage(now: Long) {
@@ -254,8 +267,10 @@ class ScrollLessAccessibilityService : AccessibilityService() {
 
     private fun refreshOverlay(pkg: String) {
         if (!overlay.enabled) return
-        val stat = db.statsForDay(StatsDatabase.today()).firstOrNull { it.pkg == pkg }
-        overlay.update(stat?.reels ?: 0, stat?.surfaceMs ?: 0L, Targets.unitLabel(pkg))
+        val stats = db.statsForDay(StatsDatabase.today())
+        val stat = stats.firstOrNull { it.pkg == pkg }
+        val total = stats.sumOf { it.reels }
+        overlay.update(stat?.reels ?: 0, stat?.surfaceMs ?: 0L, Targets.unitLabel(pkg), total, Goals.dailyGoal(this))
     }
 
     private fun publish(force: Boolean = false) {
@@ -288,6 +303,7 @@ class ScrollLessAccessibilityService : AccessibilityService() {
         private const val TICK_MS = 1000L
         private const val RESTART_GRACE_MS = 15_000L
         private const val RESTART_RECOUNT_WINDOW_MS = 90_000L
+        private const val WIDGET_MIN_INTERVAL_MS = 60_000L
         private val IGNORED_PACKAGES = setOf(
             "com.android.systemui",
             "android",
